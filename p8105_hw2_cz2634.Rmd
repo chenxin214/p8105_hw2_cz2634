@@ -1,0 +1,7 @@
+---
+title: "Homwork 2"
+author: "chenxin zhang cz2634"
+date: "09/28/2020"
+output: github_document
+---
+
