@@ -5,3 +5,7 @@ date: "09/28/2020"
 output: github_document
 ---
 
+```{r setup, message = FALSE, echo = FALSE}
+library(tidyverse)
+library(readxl)
+```
