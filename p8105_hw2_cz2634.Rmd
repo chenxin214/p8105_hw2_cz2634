@@ -11,9 +11,9 @@ library(readxl)
 ```
 
 ## Problem 1
-#### Read the Mr.Trashwheel dataset.
+#### 1.1 Read the Mr.Trashwheel dataset.
 
-```{r}
+```{r message = FALSE, echo = FALSE}
 path_to_data = "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx"
 ```
 
@@ -23,22 +23,17 @@ trashwhell_df =
             path = path_to_data,
             sheet = "Mr. Trash Wheel",
             range = cell_cols("A:N")) %>% 
-            janitor::clean_names() %>% 
-            drop_na(dumpster) %>% 
-            mutate(
-               sports_balls = round(sports_balls),
-              sports_balls = as.integer(sports_balls)
-    )
+  janitor::clean_names() %>% 
+  drop_na(dumpster) %>% 
+  mutate(
+         sports_balls = round(sports_balls),
+        sports_balls = as.integer(sports_balls)) 
+trashwhell_df 
 ```
 
-```{r}
-trashwhell_df
-```
-
-
-#### Read precipitation data for 2018 and 2017.
-** 2018
-```{r echo = FALSE}
+#### 1.2 Read precipitation data for 2018 and 2017
+**2018**
+```{r message = FALSE, echo = FALSE}
 precip_2018 = 
   read_excel(
     "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -50,8 +45,8 @@ precip_2018 =
   relocate(year)
 precip_2018
 ```
-** 2017
-```{r precip_2017, echo = FALSE}
+**2017**
+```{r precip_2017, message = FALSE, echo = FALSE}
 precip_2017 = 
   read_excel(
     "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -64,15 +59,15 @@ precip_2017 =
 precip_2017
 ```
 
-```{r echo = TRUE, collapse = TRUE}
+```{r message = FALSE, echo = FALSE}
 # create a data frame for month
 month_df = 
   tibble(
     month = 1:12, 
     month_name = month.name
-  )
+  ) 
 ```
-
+**row-combine precip_2018 and precip_2017**
 ```{r message = FALSE, echo = FALSE}
 # row-combine precip_2018 and precip_2017
 precip_df = 
@@ -81,12 +76,11 @@ precip_m = left_join(precip_df, month_df, by = "month")
 precip_m 
 ```
 
-
- This dataset contains information from the Mr.Trashwheel trash collector in Baltimore, Maryland. As trash enters the  inner harbor, the trashwheel collects that trash, and stores it in a dumpster. The dataset contains information on year, month, and trash collected, include some specific kinds of trash. There are a total of `r nrow(trashwhell_df)` rows in our final dataset. Additional data sheets include monthly precipitation for year 2017 and 2018. The total monthly precipitation for year 2017 is `r sum(pull(precip_2017, total))` (in). The total monthly precipitation for year 2018 is `r sum(pull(precip_2018, total))` (in). 
+ * This dataset contains information from the Mr.Trashwheel trash collector in Baltimore, Maryland. As trash enters the  inner harbor, the trashwheel collects that trash, and stores it in a dumpster. The dataset contains information on year, month, and trash collected, include some specific kinds of trash. There are a total of `r nrow(trashwhell_df)` rows in our final dataset. Additional data sheets include monthly precipitation for year 2017 and 2018. The total monthly precipitation for year 2017 is `r sum(pull(precip_2017, total))` (in). The total monthly precipitation for year 2018 is `r sum(pull(precip_2018, total))` (in). 
 
 ## Problem 2
 
-#### Read and Clean the NYC Transit dataset
+#### 2.1 Read and Clean the NYC Transit dataset
 
 ```{r message = FALSE, echo = FALSE}
 transit_df = 
@@ -99,16 +93,12 @@ transit_df =
 transit_df
 ```
 
-The dataset is consist of `r nrow(transit_df)` obervations and `r ncol(transit_df)` varaibles. The variables include `r names(transit_df)`. Some works I did so far include:  
-* clean the varaible names to lowercase, 
-* choose columns that we are interested in, 
-* recode a character varaible(entry) to a logical varaible.
+*  The dataset is consist of `r nrow(transit_df)` obervations and `r ncol(transit_df)` varaibles. The variables include `r names(transit_df)`. Some works I did so far include:  clean the varaible names to lowercase,  choose columns that we are interested in, and recode a character varaible(entry) to a logical varaible.
+*  The NYC transits dataset includes `r transit_df %>% distinct(station_name, line) %>% nrow ` distinct stations. 
+*  Among these stations, `r transit_df %>% distinct(station_name, line, ada) %>% filter(ada == TRUE) %>% nrow ` stations are ADA compliant. 
+*  The proportion of station entrances/exits without vending allow entrance is `r (filter(transit_df, vending == "NO", entry =="TRUE") %>% nrow / filter(transit_df, vending == "NO") %>% nrow)*100`%.
 
-* The NYC transits dataset includes `r transit_df %>% distinct(station_name, line) %>% nrow ` distinct stations. 
-* Among these stations, `r transit_df %>% distinct(station_name, line, ada) %>% filter(ada == TRUE) %>% nrow ` stations are ADA compliant. 
-* The proportion of station entrances/exits without vending allow entrance is `r (filter(transit_df, vending == "NO", entry =="TRUE") %>% nrow / filter(transit_df, vending == "NO") %>% nrow)*100`%.
-
-#### Reformat data so that route number and route name are distinct variables.
+#### 2.2 Reformat data so that route number and route name are distinct variables
 
 ```{r message = FALSE, echo = FALSE}
 transit_tidy = 
@@ -126,7 +116,7 @@ transit_tidy
 * Of the stations that serve the A train, `r transit_tidy %>% filter(route_number == "A") %>% distinct(station_name, line, ada) %>% filter(ada == "TRUE") %>% count()` are ADA compliant.
 
 ## Problem 3
-#### clean the data in pols-month.csv.
+#### 3.1 clean the data in pols-month dataset
 
 ```{r message = FALSE, echo = FALSE}
 month_df = tibble(month = 1:12, month_name = month.name)
@@ -156,7 +146,7 @@ pols_month_df = left_join(pols_df, month_df, by = "month") %>% select(-month) %>
 pols_month_df
 ```
 
-## clean the data in snp.csv.
+## 3.2 clean the data in snp dataset
 
 ```{r message = FALSE, echo = FALSE}
 #clean the data
@@ -172,7 +162,7 @@ snp_df = read_csv(
 snp_df
 ```
 
-## Tidy the unemployment.csv dataset.
+## 3.3 Tidy the unemployment dataset.
 
 ```{r message = FALSE, echo = FALSE}
 # change abbreviation to whole name
@@ -197,7 +187,7 @@ unemployment_df=read_csv(
 
 unemployment_df
 ```
-## merge unemployment dataset with the previous datasets
+**merge unemployment dataset with the previous datasets**
 
 ```{r message = FALSE, echo = FALSE}
 #merge unemployment.csv with the previous datasets
@@ -211,10 +201,10 @@ final_df
 
 *the pols-month dataset is consist of `r nrow(pols_month_df)` rows and `r ncol(pols_month_df)` columns. It records data related to presidents, governors, senatros, and representatives from `r min(pols_month_df$year)` to `r max(pols_month_df$year)`.
 
-*the pols-month dataset is consist of `r nrow(pols_month_df)` rows and `r ncol(pols_month_df)` columns. It records data related to presidents, governors, senatros, and representatives from `r min(pols_month_df$year)` to `r max(pols_month_df$year)`.
-
 *the snp.csv dataset is consist of `r nrow(snp_df)` rows and `r ncol(snp_df)` columns. 
+
 *the unemployment.csv dataset is consist of `r nrow(unemployment_df)` rows and `r ncol(unemployment_df)` columns. It records data related to unemployment rate from `r min(pols_month_df$year)` to `r max(pols_month_df$year)`.
+
 *The final dataset is a combination of the three datasets above. It is comvenient to comparare the imformations within one table. The datasets includes `r nrow(final_df)` rows and `r ncol(final_df)` columns. The year range from `r min(final_df$year)` to `r max(final_df$year)`.
 
 
