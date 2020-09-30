@@ -130,7 +130,6 @@ transit_tidy
 
 ```{r message = FALSE, echo = FALSE}
 month_df = tibble(month = 1:12, month_name = month.name)
-month_df
 ```
 
 ```{r message = FALSE, echo = FALSE}
@@ -142,7 +141,7 @@ pols_df = read_csv(
   mutate(month = as.integer(month)) 
 ```
 
-```{r}
+```{r message = FALSE, echo = FALSE}
 #replace month number with month name (need to delet month col by yourself.)
 #create a president variable taking values gop and dem
 #remove prez_dem and prez_gop; and remove the day variable.
@@ -154,11 +153,12 @@ pols_month_df = left_join(pols_df, month_df, by = "month") %>% select(-month) %>
     values_to = "value") %>% 
   select(-date) %>% 
   relocate(year, month_name, president, value, everything()) 
+pols_month_df
 ```
 
 ## clean the data in snp.csv.
 
-```{r}
+```{r message = FALSE, echo = FALSE}
 #clean the data
 #organize so that year and month are the leading columns
 snp_df = read_csv(
@@ -167,10 +167,60 @@ snp_df = read_csv(
   separate(date, c("month", "date", "year")) %>%
   mutate(month = as.integer(month)) %>% 
   left_join(month_df, by = "month") %>% 
-  select(-month) %>% 
+  select(-month, -date) %>% 
   relocate(year, month_name, everything())
+snp_df
 ```
 
-## 
+## Tidy the unemployment.csv dataset.
+
+```{r message = FALSE, echo = FALSE}
+# change abbreviation to whole name
+month_df2 = tibble(
+  month = c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"),
+  month_name = month.name)
+```
+
+```{r message = FALSE, echo = FALSE}
+#clean data
+unemployment_df=read_csv(
+  "./data/unemployment.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    jan:dec,
+    names_to = "month",
+    values_to = "unemployment_rate") %>% 
+  left_join(month_df2, by = "month") %>% 
+  mutate(year = as.character(year)) %>% 
+  select(-month) %>% 
+  relocate(year, month_name, everything())
+
+unemployment_df
+```
+## merge unemployment dataset with the previous datasets
+
+```{r message = FALSE, echo = FALSE}
+#merge unemployment.csv with the previous datasets
+final_df = 
+  left_join(pols_month_df, snp_df, by = c("year", "month_name")) %>% 
+  left_join(unemployment_df, by = c("year", "month_name"))
+final_df
+```
+
+#### Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset
+
+*the pols-month dataset is consist of `r nrow(pols_month_df)` rows and `r ncol(pols_month_df)` columns. It records data related to presidents, governors, senatros, and representatives from `r min(pols_month_df$year)` to `r max(pols_month_df$year)`.
+
+*the pols-month dataset is consist of `r nrow(pols_month_df)` rows and `r ncol(pols_month_df)` columns. It records data related to presidents, governors, senatros, and representatives from `r min(pols_month_df$year)` to `r max(pols_month_df$year)`.
+
+*the snp.csv dataset is consist of `r nrow(snp_df)` rows and `r ncol(snp_df)` columns. 
+*the unemployment.csv dataset is consist of `r nrow(unemployment_df)` rows and `r ncol(unemployment_df)` columns. It records data related to unemployment rate from `r min(pols_month_df$year)` to `r max(pols_month_df$year)`.
+*The final dataset is a combination of the three datasets above. It is comvenient to comparare the imformations within one table. The datasets includes `r nrow(final_df)` rows and `r ncol(final_df)` columns. The year range from `r min(final_df$year)` to `r max(final_df$year)`.
+
+
+
+
+
+
 
 
