@@ -38,7 +38,7 @@ trashwhell_df
 
 #### Read precipitation data for 2018 and 2017.
 ** 2018
-```{r precip_2018, echo = FALSE}
+```{r echo = FALSE}
 precip_2018 = 
   read_excel(
     "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -64,7 +64,7 @@ precip_2017 =
 precip_2017
 ```
 
-```{r combine precip, echo = TRUE, collapse = TRUE}
+```{r echo = TRUE, collapse = TRUE}
 # create a data frame for month
 month_df = 
   tibble(
@@ -73,7 +73,7 @@ month_df =
   )
 ```
 
-```{r}
+```{r message = FALSE, echo = FALSE}
 # row-combine precip_2018 and precip_2017
 precip_df = 
   bind_rows(precip_2018, precip_2017) 
@@ -88,7 +88,7 @@ precip_m
 
 #### Read and Clean the NYC Transit dataset
 
-```{r}
+```{r message = FALSE, echo = FALSE}
 transit_df = 
   read_csv(
     "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
@@ -104,11 +104,13 @@ The dataset is consist of `r nrow(transit_df)` obervations and `r ncol(transit_d
 * choose columns that we are interested in, 
 * recode a character varaible(entry) to a logical varaible.
 
-The NYC transits dataset includes `r transit_df %>% distinct(station_name, line) %>% nrow ` distinct stations. Among these stations, `r transit_df %>% distinct(station_name, line, ada) %>% filter(ada == TRUE) %>% nrow ` stations are ADA compliant. The proportion of station entrances/exits without vending allow entrance is `r (nrow(filter(transit_df, vending == "NO"))/nrow(transit_df))*100`%.
+* The NYC transits dataset includes `r transit_df %>% distinct(station_name, line) %>% nrow ` distinct stations. 
+* Among these stations, `r transit_df %>% distinct(station_name, line, ada) %>% filter(ada == TRUE) %>% nrow ` stations are ADA compliant. 
+* The proportion of station entrances/exits without vending allow entrance is `r (filter(transit_df, vending == "NO", entry =="TRUE") %>% nrow / filter(transit_df, vending == "NO") %>% nrow)*100`%.
 
 #### Reformat data so that route number and route name are distinct variables.
 
-```{r}
+```{r message = FALSE, echo = FALSE}
 transit_tidy = 
   transit_df %>% 
   mutate_at(vars(route1:route11), as.character) %>% # convert number to character
@@ -117,13 +119,42 @@ transit_tidy =
     names_to = "route_name",
     values_to = "route_number") %>% 
   drop_na(route_number)
+transit_tidy
 ```
 
 * The transit dataset shows there are `r transit_tidy %>% filter(route_number == "A") %>% distinct(station_name, line) %>% count()` stations serve the A train.
 * Of the stations that serve the A train, `r transit_tidy %>% filter(route_number == "A") %>% distinct(station_name, line, ada) %>% filter(ada == "TRUE") %>% count()` are ADA compliant.
 
+## Problem 3
+#### clean the data in pols-month.csv.
 
+```{r message = FALSE, echo = FALSE}
+month_df = tibble(month = 1:12, month_name = month.name)
+month_df
+```
 
+```{r message = FALSE, echo = FALSE}
+#separate month to year, month, date
+pols_df = read_csv(
+  "./data/pols-month.csv") %>% 
+  janitor::clean_names() %>% 
+  separate(mon, c("year", "month", "date")) %>%
+  mutate(month = as.integer(month)) 
+```
+
+```{r}
+#replace month number with month name (need to delet month col by yourself.)
+#create a president variable taking values gop and dem
+#remove prez_dem and prez_gop; and remove the day variable.
+pols_month_df = left_join(pols_df, month_df, by = "month") %>% select(-month) %>% 
+  pivot_longer(
+  cols = starts_with("prez_"),
+    names_to = "president",
+    names_prefix = "prez_gop_dem",
+    values_to = "value") %>% 
+  select(-date) %>% 
+  relocate(year, month_name, president, value, everything()) 
+```
 
 
 
